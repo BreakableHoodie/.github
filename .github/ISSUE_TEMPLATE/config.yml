@@ -1,0 +1,4 @@
+# Keep the "Open a blank issue" escape hatch alongside the structured templates —
+# not every report fits a form. Set to false in a specific repo's own
+# .github/ISSUE_TEMPLATE/config.yml if you want to force template use there.
+blank_issues_enabled: true

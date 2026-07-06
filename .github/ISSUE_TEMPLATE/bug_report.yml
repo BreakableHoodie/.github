@@ -1,0 +1,43 @@
+name: Bug report
+description: Something is broken or behaving incorrectly
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you observe? Include the actual vs. expected behaviour.
+      placeholder: When I …, I expected …, but instead …
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The exact steps to trigger it. A reliable repro gets fixed fastest.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser / OS / where it happened (production, preview, local), and version if known.
+      placeholder: "Chrome 130 · macOS · production"
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Your best guess — a maintainer will confirm.
+      options:
+        - "p1 — high / broken in production"
+        - "p2 — medium"
+        - "p3 — low / cosmetic"
+    validations:
+      required: false
