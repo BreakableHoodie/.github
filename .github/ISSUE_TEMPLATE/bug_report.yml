@@ -22,6 +22,39 @@ body:
         3.
     validations:
       required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence — how do you know?
+      description: >-
+        The command you ran and what it printed, a log excerpt, an error, a
+        screenshot — whatever shows this is real rather than suspected.
+        **If you have not verified it, that is fine: write "Not verified —
+        hypothesis".** The point is not to force you to investigate before
+        filing. It is that whoever picks this up can tell a measured fact from
+        an educated guess without having to ask you, which matters most when
+        you are no longer the person they can ask.
+      placeholder: |
+        $ npm test -- reset-password
+        ✗ expired token accepted (expected 400, got 200)
+
+        …or simply: Not verified — hypothesis, noticed while doing something else
+    validations:
+      required: true
+  - type: textarea
+    id: sweep
+    attributes:
+      label: Other instances of this class
+      description: >-
+        Bugs travel in families. If one endpoint drops a field from its
+        projection, or one page sorts on the wrong key, the same mistake is
+        usually live somewhere else too — and the second instance is the one a
+        user stumbles onto. Where else did you look? "Checked the other three
+        endpoints, all correct" is a genuinely useful answer, and so is
+        "haven't swept yet".
+      placeholder: Searched for the same pattern across …; found N other sites / found none / not swept yet
+    validations:
+      required: false
   - type: input
     id: environment
     attributes:
@@ -34,7 +67,10 @@ body:
     id: priority
     attributes:
       label: Priority
-      description: Your best guess — a maintainer will confirm.
+      description: >-
+        Your best guess — a maintainer confirms it at triage. Note this
+        dropdown records your read in the issue body; it does not apply a
+        `priority:pN` label, which is applied separately.
       options:
         - "p1 — high / broken in production"
         - "p2 — medium"
