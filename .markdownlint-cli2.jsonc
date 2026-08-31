@@ -1,0 +1,32 @@
+// markdownlint-cli2 options. Run via `npx markdownlint-cli2 "**/*.md"`, or let
+// the lint workflow do it.
+//
+// USE markdownlint-cli2, NOT the `markdownlint` (cli v1) brew formula — they
+// read DIFFERENT config files. cli2 is also what CodeRabbit runs, so a local
+// run previews the PR gate rather than offering a second opinion.
+//
+// RULES live in .markdownlint.json and are still read from there; this file
+// deliberately declares no "config" key so it cannot shadow them.
+//
+// Only TWO rules are disabled, each measured against this repo's actual corpus
+// (10 stock findings across 3 files) rather than copied from elsewhere:
+//
+//   MD013 line-length (9 of the 10) — every hit is a Markdown TABLE row or a
+//     guidance comment. A table cell cannot wrap at 80 characters without
+//     becoming unreadable, and the 80-column convention predates side-by-side
+//     diffs on wide screens. Disabled outright rather than raised, because a
+//     limit that gets bumped each time a table grows is not a limit.
+//
+//   MD041 first-line-heading (1 of the 10) — pull_request_template.md starts
+//     at `## Summary` on purpose. Its content is injected into a PR body, not
+//     rendered as a standalone document, and a top-level `#` there would render
+//     as an oversized heading above the description.
+//
+// Everything else in markdownlint's default set stays ON. Resist widening this
+// list without a finding to point at: settimesdotca disables 18 rules, and that
+// is justified there by a much larger and partly vendored corpus — it is not a
+// template to copy.
+{
+  "gitignore": true,
+  "ignores": ["**/node_modules/**"]
+}
