@@ -12,10 +12,33 @@ global `~/.claude/CLAUDE.md`. Change it once; it applies everywhere.
 | `.github/pull_request_template.md` | PR description prefilled in every repo without its own template |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | "Bug report" option in **New issue** |
 | `.github/ISSUE_TEMPLATE/feature_request.yml` | "Feature / enhancement" option in **New issue** |
+| `.github/ISSUE_TEMPLATE/maintenance.yml` | "Maintenance" option in **New issue** — test / refactor / chore / perf / docs |
 | `.github/ISSUE_TEMPLATE/config.yml` | Issue-picker config (keeps the blank-issue escape hatch) |
 
-A repo overrides any of these by committing its own file at the same path.
-settimesdotca, for example, keeps its own richer `pull_request_template.md`.
+### Overriding — and the trap in how issue templates inherit
+
+The PR template overrides **per file**: commit your own
+`.github/pull_request_template.md` and it replaces this one, nothing else.
+settimesdotca does exactly that, keeping a richer version.
+
+**Issue templates do not work that way.** Inheritance is *all-or-nothing at the
+folder level*, per
+[GitHub's docs](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file):
+
+> if a repository defines valid issue templates or issue template configuration
+> in its own `.github/ISSUE_TEMPLATE` folder, **none of the contents** of the
+> default `.github/ISSUE_TEMPLATE` folder will be used.
+
+So adding **one** issue form to a repo silently removes *every* form above from
+that repo, and forks it off future improvements here. The failure is quiet:
+nothing errors, the New-issue picker just stops offering the shared forms.
+
+**Practical rule:** an issue form that should apply broadly belongs *here*,
+written repo-agnostically (no project-specific commands, paths, or numbers). Put
+one in a repo only when you intend that repo to own its whole issue-form set.
+`maintenance.yml` was added here for exactly this reason — it was first proposed
+as a per-repo form for settimesdotca, which would have deleted that repo's bug
+and feature forms.
 
 ## What is NOT inherited — run the script
 

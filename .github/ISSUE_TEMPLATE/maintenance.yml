@@ -1,0 +1,94 @@
+name: Maintenance (test / refactor / chore / perf / docs)
+description: Engineering work that is neither a user-facing bug nor a new feature
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        For test coverage, refactors, tooling, performance and documentation
+        work — the shape that fits neither the bug nor the feature form and
+        otherwise falls through to a blank issue.
+
+
+        Only the first three fields are required. The rest earn their place on
+        larger pieces of work and can be left empty on small ones.
+  - type: textarea
+    id: gap
+    attributes:
+      label: What needs doing
+      description: The gap, stated concretely. Name the files, endpoints or surfaces involved.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it matters
+      description: >-
+        What breaks, rots, or stays invisible if this is never done? "It would
+        be tidier" is a legitimate answer — write it plainly rather than
+        inventing urgency for it.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence — how do you know?
+      description: >-
+        The command you ran and what it printed — a coverage figure, a bundle
+        size, a line count, a failing gate. **If you have not verified it,
+        write "Not verified — hypothesis".** The point is not to force
+        investigation before filing; it is that whoever picks this up can tell
+        a measured fact from an educated guess without having to ask you.
+        Output from an automated review tool is a claim until it is checked.
+      placeholder: |
+        $ npm run test:coverage
+        src/auth/logout.js | 0 | 0 | 0 | 0 | 10-74
+
+        …or simply: Not verified — hypothesis
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What must be true for this to be closed? Concrete and checkable beats aspirational.
+    validations:
+      required: false
+  - type: textarea
+    id: verification
+    attributes:
+      label: How we will know it actually worked
+      description: >-
+        Distinct from acceptance criteria: not "what did we build" but "what
+        would prove it works". **For test work, name the mutation** — break the
+        thing on purpose and confirm the new test goes red. A suite that has
+        only ever been seen passing proves nothing about whether it would catch
+        a regression. For a performance change, name the before/after
+        measurement and where it was taken.
+      placeholder: Remove the session-invalidation statement → the new test must go red
+    validations:
+      required: false
+  - type: textarea
+    id: non-goals
+    attributes:
+      label: Non-goals
+      description: >-
+        What this issue deliberately does NOT cover. Prevents scope creep, and
+        stops a future reader "fixing" something that is intentional.
+    validations:
+      required: false
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      description: >-
+        Records the shape of the work. A GitHub form cannot apply a label
+        conditionally, so type and priority labels are applied separately —
+        this dropdown does not set them.
+      options:
+        - "test — coverage or test infrastructure"
+        - "refactor — structure, no behaviour change"
+        - "chore — tooling, deps, cleanup"
+        - "perf — performance"
+        - "docs — documentation"
+    validations:
+      required: false
