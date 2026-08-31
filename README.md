@@ -14,6 +14,7 @@ global `~/.claude/CLAUDE.md`. Change it once; it applies everywhere.
 | `.github/ISSUE_TEMPLATE/feature_request.yml` | "Feature / enhancement" option in **New issue** |
 | `.github/ISSUE_TEMPLATE/maintenance.yml` | "Maintenance" option in **New issue** — test / refactor / chore / perf / docs |
 | `.github/ISSUE_TEMPLATE/config.yml` | Issue-picker config (keeps the blank-issue escape hatch) |
+| `SECURITY.md` | Security policy + the **Report a vulnerability** flow, in every repo without its own |
 
 ### Overriding — and the trap in how issue templates inherit
 
@@ -50,8 +51,37 @@ spine (`bug`, `enhancement`, `documentation`, `chore`, `ci`, `security`,
 ./sync-labels.sh BreakableHoodie/filltheholedotca
 ```
 
-It's idempotent (`--force` updates existing labels), so re-run it anytime.
-Repo-specific domain labels live in their own repo and are left untouched.
+It's idempotent, so re-run it anytime. Repo-specific domain labels live in
+their own repo and are left untouched.
+
+Preview before applying when you are unsure of the target — the script rewrites
+colours and descriptions on labels that already exist, and there is no undo:
+
+```bash
+./sync-labels.sh BreakableHoodie/filltheholedotca --dry-run
+```
+
+## Validating changes here
+
+```bash
+./scripts/validate.sh
+```
+
+Runs markdownlint, checks every issue form for both YAML validity **and** the
+structure GitHub requires (a `body` array, a `type` on each entry, an `id` on
+anything collecting input, `options` on every dropdown), and shellchecks the
+scripts. The `Validate` workflow runs exactly this script, so a green local run
+is the same evidence as a green CI run.
+
+**Why it exists:** a malformed issue form does not fail loudly. GitHub simply
+stops offering it in the New-issue picker — in every inheriting repo at once,
+with nothing reporting an error. This repo had no CI at all until that gap was
+noticed, so the first sign of a broken form would have been someone spotting its
+absence by eye.
+
+Each check fails with an install hint rather than skipping when its tool is
+missing; a check that quietly passes because its tool is absent is worse than no
+check.
 
 ## Scope
 

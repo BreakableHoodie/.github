@@ -1,0 +1,50 @@
+name: Validate
+
+# Everything in this repository is inherited automatically by every
+# BreakableHoodie repo that does not ship its own copy. A malformed issue form
+# does not fail loudly -- GitHub simply stops offering it in the New-issue
+# picker, in every repo at once, with nothing reporting an error. This workflow
+# exists because that failure is silent and account-wide.
+#
+# It runs exactly `scripts/validate.sh`, the same script a human runs locally,
+# so a green CI run and a green local run are the same evidence.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          # This job only reads. checkout@v7 defaults this to true, which puts
+          # the GITHUB_TOKEN in the runner's git credential config for the whole
+          # job -- an unnecessary credential to hold while running npx-fetched
+          # tooling.
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      # jq and shellcheck are preinstalled on ubuntu-latest. validate.sh fails
+      # with an install hint rather than skipping if that ever stops being true,
+      # so a runner image change surfaces as a failure instead of a silent pass.
+      - name: Validate
+        run: ./scripts/validate.sh
