@@ -33,7 +33,17 @@ for arg in "$@"; do
       echo "Unknown option: $arg" >&2
       exit 2
       ;;
-    *) REPO="$arg" ;;
+    *)
+      # Reject a second positional rather than silently overwriting the first:
+      # `sync-labels.sh owner/right owner/wrong` would otherwise preflight and
+      # then WRITE to owner/wrong, which is the mistake --dry-run exists to
+      # prevent.
+      if [[ -n "$REPO" ]]; then
+        echo "Expected at most one owner/repo argument (got '$REPO' and '$arg')." >&2
+        exit 2
+      fi
+      REPO="$arg"
+      ;;
   esac
 done
 
@@ -85,7 +95,19 @@ else
   echo "Syncing portable label spine → $TARGET"
 fi
 
-existing="$(gh label list "${REPO_ARG[@]}" --limit 200 --json name --jq '.[].name')"
+# --limit is a hard cap, not a page size: a repo with more labels than this
+# would silently return a truncated list, and every label past the cap would be
+# misreported as "create". 1000 is far above any realistic repo; the check below
+# makes a future overflow loud instead of silent.
+LABEL_FETCH_LIMIT=1000
+existing="$(gh label list "${REPO_ARG[@]}" --limit "$LABEL_FETCH_LIMIT" --json name --jq '.[].name')"
+existing_count="$(grep -c . <<<"$existing" || true)"
+if [[ "$existing_count" -ge "$LABEL_FETCH_LIMIT" ]]; then
+  echo "Refusing to continue: $TARGET has >= $LABEL_FETCH_LIMIT labels, so the" >&2
+  echo "existing-label list may be truncated and this run could mislabel" >&2
+  echo "updates as creations. Raise LABEL_FETCH_LIMIT in this script." >&2
+  exit 1
+fi
 
 created=0
 updated=0

@@ -20,6 +20,13 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 rc=0
+
+# mktemp, not a fixed /tmp path: a predictable name can be pre-created as a
+# symlink by another local user, redirecting whatever this writes. Cleaned up
+# on any exit, including a failure or an interrupt.
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+
 fail() {
   printf '  \033[31mFAIL\033[0m %s\n' "$1" >&2
   rc=1
@@ -32,10 +39,10 @@ if ! command -v npx >/dev/null 2>&1; then
   echo "  npx not found — install Node.js (https://nodejs.org)" >&2
   exit 1
 fi
-if npx --yes markdownlint-cli2 "**/*.md" >/tmp/mdlint.out 2>&1; then
+if npx --yes markdownlint-cli2 "**/*.md" >"$tmpdir/mdlint.out" 2>&1; then
   ok "markdown clean"
 else
-  cat /tmp/mdlint.out >&2
+  cat "$tmpdir/mdlint.out" >&2
   fail "markdownlint reported issues"
 fi
 
@@ -83,16 +90,26 @@ for form in "${forms[@]}"; do
     continue
   fi
 
-  # Every entry needs a type; anything that collects input needs an id (GitHub
-  # keys the submitted values on it); a dropdown without options renders empty.
+  # Every entry's type must be one GitHub actually supports. Checking only that
+  # a `type` KEY exists is not enough: a typo like "textareaa" has a type, is
+  # not in the id-required set, and is not a dropdown, so it passes every other
+  # assertion here while GitHub rejects the whole form. That is the exact
+  # silent-breakage this validator exists to prevent, so the allowed set is
+  # enumerated rather than inferred.
+  #
+  # Also: anything collecting input needs an `id` (GitHub keys submitted values
+  # on it), a dropdown without options renders empty, and a form made only of
+  # markdown blocks collects nothing and is rejected.
   if ! jq -e '
         (.body | all(has("type")))
+        and (.body | all(.type | IN("markdown","input","textarea","dropdown","checkboxes")))
         and (.body | map(select(.type | IN("input","textarea","dropdown","checkboxes")))
              | all(has("id")))
         and (.body | map(select(.type == "dropdown"))
              | all(.attributes.options | type == "array" and (length > 0)))
+        and (.body | map(select(.type != "markdown")) | length > 0)
       ' >/dev/null <<<"$json"; then
-    fail "$base has a body entry missing type/id, or a dropdown with no options"
+    fail "$base: unsupported/missing type, missing id on an input field, a dropdown with no options, or no non-markdown field"
     continue
   fi
 
